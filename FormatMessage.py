@@ -10,21 +10,26 @@ class MessageFormatter:
         with open(self.input_file, 'r') as file:
             raw_messages = json.load(file)
 
+        # Sort the raw messages by timestamp
+        sorted_raw_messages = sorted(raw_messages['RawMessages'], key=lambda x: x['Timestamp'])
+
         formatted_messages = {"Messages": []}
 
-        # Iterate over each raw message
-        for sqs_message in raw_messages['RawMessages']:
+        # Iterate over each sorted raw message
+        for sqs_message in sorted_raw_messages:
             # Extract relevant fields
             topic_arn = sqs_message['TopicArn']
             subject = sqs_message['Subject']
-            message_content = sqs_message['Message']
+            message_content = json.loads(sqs_message['Message'])
             message_attributes = sqs_message['MessageAttributes']
+            timestamp = sqs_message['Timestamp']
 
             # Format the data to match message_data.json structure
             formatted_message = {
                 "TopicArn": topic_arn,
                 "Subject": subject,
                 "MessageContent": message_content,
+                "TimeStamp": timestamp,
                 "MessageAttributes": {
                     key: { 
                         "Type": attr['Type'],
